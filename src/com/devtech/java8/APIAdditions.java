@@ -1,5 +1,7 @@
 package com.devtech.java8;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -19,13 +21,18 @@ public class APIAdditions {
     private List<Integer> integerList = new Random().ints(100).boxed().collect(Collectors.toList());
 
     /**
-     * NOTE: List.copy() actually modifies the underlying data structure. The list is actually sorted.
+     * NOTE: List.sort() actually modifies the underlying data structure. The list is actually sorted.
      * @return
      */
+    @Test
     public List<Integer> newListSort() {
         List<Integer> listCopy = new ArrayList<>(integerList);
+
         listCopy.sort(null); //sorts by natural ordering
+        System.out.println(listCopy);
+
         listCopy.sort(Comparator.reverseOrder()); //sorts by comparator
+        System.out.println(listCopy);
         return listCopy;
     }
 
