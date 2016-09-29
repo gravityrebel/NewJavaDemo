@@ -1,0 +1,23 @@
+- JLayer is a universal decorator for Swing components which enables you to implement various advanced
+painting effects as well as receive notifications of all AWTEvents generated within its borders.
+
+JLayer delegates the handling of painting and input events to a LayerUI object,
+which performs the actual decoration.
+
+- The zip file system provider introduced in the Java SE 7 release is an implementation of a custom
+file system provider. The zip file system provider treats a zip or JAR file as a file system and
+provides the ability to manipulate the contents of the file. The zip file system provider creates
+multiple file systems — one file system for each zip or JAR file.
+
+- The fork/join framework, which is based on the ForkJoinPool class, is an implementation of the
+Executor interface. It is designed to efficiently run a large number of tasks using a pool of
+worker threads. A work-stealing technique is used to keep all the worker threads busy, to take
+full advantage of multiple processors. See Fork/Join in The Java Tutorials.
+
+FORK/JOIN IS AN IMPLEMENTATION OF THE EXECUTOR THREAD SERVICE. IF YOU DON'T KNOW ABOUT EXECUTORS
+AND STILL CREATE THREADS MANUALLY, PLEASE GO BACK AND REVIEW EXECUTORS FROM JAVA 5.
+FORK/JOIN IS THE BASIS UPON WHICH .parallel() WORKS IN JAVA 8.
+
+- JAXP was added to Java 7. The Java API for XML Processing (JAXP) enables applications to parse,
+transform, validate, and query XML documents using an API that is independent of a particular
+XML processor implementation.
