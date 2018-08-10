@@ -1,4 +1,4 @@
-package com.devtech.java7;
+package com.melnick.java7;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -75,7 +75,6 @@ public class AutoClose {
              BufferedWriter writer =
                      Files.newBufferedWriter(Paths.get(System.getProperty("user.home")))
         ) {
-
             inputStream.read();
             writer.write(print);
         } catch (IOException e) {

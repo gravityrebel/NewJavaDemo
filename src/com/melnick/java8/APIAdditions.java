@@ -1,5 +1,8 @@
-package com.devtech.java8;
+package com.melnick.java8;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.Collections;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,7 +21,7 @@ import java.util.stream.Stream;
  * Created by ZMelnic on 12/28/2015.
  */
 public class APIAdditions {
-    private List<Integer> integerList = new Random().ints(100).boxed().collect(Collectors.toList());
+    private List<Integer> integerList = new Random().ints(100).boxed().collect(toList());
 
     /**
      * NOTE: List.sort() actually modifies the underlying data structure. The list is actually sorted.
@@ -42,7 +45,7 @@ public class APIAdditions {
      * @return a new list.
      */
     public List<Integer> streamSort() {
-        return integerList.stream().sorted().collect(Collectors.toList());
+        return integerList.stream().sorted().collect(toList());
     }
 
     public List<Integer> forEach() {
@@ -51,12 +54,12 @@ public class APIAdditions {
     }
 
     public Collection<Integer> removeIf() {
-        integerList.removeIf(integer -> integer % 2 == 0); //remove all even numbers from Collection
+        integerList.removeIf(APIAdditions::isEven); //remove all even numbers from Collection
         return  integerList;
     }
 
     public List<Integer> replaceAll() {
-        integerList.replaceAll(integer -> integer++);
+        integerList.replaceAll(this::plusOne);
         return integerList;
     }
 
@@ -69,7 +72,7 @@ public class APIAdditions {
         for (String alias : aliasArray) {
             joiner.add(alias);
         }
-        return joiner.toString(); //returns "{Alias 1, Alias 2, Alias 3}"
+        return joiner.toString(); //returns "Alias 1, Alias 2, Alias 3"
     }
 
     public String stringJoinersStream() {
@@ -83,6 +86,7 @@ public class APIAdditions {
 
     /*These methods do a lot of null checking! If you are explicitly using nulls for "absent" values,
     * it could screw things up! Consider using Optional.empty() instead to represent absent cases*/
+
     public void newMapMethods() {
         Map<Integer, String> map = new HashMap<>();
 
@@ -101,24 +105,31 @@ public class APIAdditions {
         map.replace(1, "TWO"); //replace the current value for the key with the specified value
 
     }
-
-    public void newObjectsClass() {
+    public void newObjectsClass(String value) {
         //technically addedd in Java 7, expanded in Java 8
         String one = "ONE";
         String two = "TWO";
 
         Objects.equals(one, two); //automatically preforms the correct null check
         Objects.requireNonNull(one); //call to put at the beginning of a method. throws NullPointerException
-        Objects.requireNonNull(two, () -> "String is null"); //message is not created unless null
+        Objects.requireNonNull(two, "String is null"); //message is not created unless null
 
         integerList.stream().filter(Objects::nonNull); //some Objects methods are useful for filter operations
         integerList.stream().filter(Objects::isNull);
     }
 
-    public static void performAction(Integer integer) {
+    private int plusOne(int number) {
+        return ++number;
+    }
+
+    private static void performAction(Integer integer) {
     }
 
     public static void performAction(Object o1, Object o2) {
 
+    }
+
+    private static boolean isEven(Integer integer) {
+        return integer % 2 == 0;
     }
 }

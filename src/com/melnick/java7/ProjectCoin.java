@@ -1,5 +1,6 @@
-package com.devtech.java7;
+package com.melnick.java7;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -68,7 +69,9 @@ public class ProjectCoin {
     public void underscoresInNumericLiterals() {
         int hardToRead = 1000000;
         int easyToRead = 1_000_000;
-        System.out.println("The number are exactly the same: " + (hardToRead == easyToRead));
+        Assert.assertEquals("The numbers are not equal", hardToRead, easyToRead);
+
+       // System.out.println("The number are exactly the same: " + (hardToRead == easyToRead));
     }
 
 

@@ -1,4 +1,4 @@
-package com.devtech.java8;
+package com.melnick.java8;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
@@ -6,8 +6,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 public enum MoreStreams {
-    STREAM_A("A"),
-    STREAM_B("B");
+    STREAM_A("Stream A"),
+    STREAM_B("Stream B");
 
     private final String value;
 
@@ -107,8 +107,8 @@ public enum MoreStreams {
      * @return
      * @throws Exception
      */
-    public static MoreStreams betterValueFrom(String value) throws Exception {
-        Objects.requireNonNull(value);
+    public static MoreStreams betterValueFrom(final String value) throws Exception {
+        Objects.requireNonNull(value, "Passed in value was null. Provide a non-null value") ;
         return Arrays.stream(values())
                 .filter(moreStreams -> value.equals(moreStreams.getValue()))
                 .findFirst()

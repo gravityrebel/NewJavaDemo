@@ -1,4 +1,4 @@
-package com.devtech.java7;
+package com.melnick.java7;
 
 import org.junit.Test;
 
@@ -110,7 +110,7 @@ public class NewFileLibrary {
 
         try {
             Files.copy(doesExist, copyLocation, StandardCopyOption.REPLACE_EXISTING);
-            assertTrue(Files.size(doesExist) == Files.size(copyLocation));
+            assertEquals(Files.size(doesExist), Files.size(copyLocation));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,8 +119,6 @@ public class NewFileLibrary {
         URI u = URI.create("http://xkcd.com/");
         try (InputStream in = u.toURL().openStream()) {
             Files.copy(in, storeWebData, StandardCopyOption.REPLACE_EXISTING);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

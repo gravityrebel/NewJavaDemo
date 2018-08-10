@@ -1,5 +1,12 @@
-package com.devtech.java8;
+package com.melnick.java8;
 
+import static org.junit.Assert.assertEquals;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,19 +15,21 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * WELCOME TO THE WORLD OF LAMBDA'S
- * FUNCTIONAL PROGRAMING PARADIGMS HAVE BEEN ADDED TO JAVA!
- *
- * Lambda's are a functional notation. The concepts here are different than typical programing
- * that we are all used to, but they are very useful and powerful.
- *
- *
- * Functional programing is based on the idea of passing functions AS PARAMETERS.
- * That is to say methods have generic USES, and the specific behavior you want done is passed
- * dynamically at runtime.
- *
+    **WELCOME TO THE WORLD OF LAMBDA'S
+    **FUNCTIONAL PROGRAMING PARADIGMS HAVE BEEN ADDED TO JAVA!
+    **
+    **Lambda's are a functional notation. The concepts here are different than typical programing
+    **that we are all used to,but they are very useful and powerful.
+    **
+    **
+    **Functional programing is based on the idea of passing functions AS PARAMETERS.
+    **That is to say methods have generic USES,and the specific behavior you want done is passed
+    **dynamically at runtime.
+    **
  */
 public class Lambda {
 
@@ -65,10 +74,11 @@ public class Lambda {
             System.out.println(stooge);
         }
 
-        /** An implementation of the class Consumer. See how we define the behavior of accept()
+        /* An implementation of the class Consumer. See how we define the behavior of accept()
           explicitly here, then look at the implementation of forEach() above. Note how now the
           traditional for loop and the below code are identical. Except that the choice of how to
           do the iteration is done by the class, not the programmer.*/
+
         stoogeList.forEach(new Consumer<String>() {
             @Override public void accept(String stooge) {
                 System.out.println(stooge);
@@ -80,10 +90,12 @@ public class Lambda {
          This is a SHORTHAND! Lambda's are shorthands for their functional interfaces.
          This is the same code as above. The way I have grown to read this code is:
          for each "stooge" such that: System.out.println("stooge")*/
+
         stoogeList.forEach(stooge -> System.out.println(stooge));
 
         /*This is a method reference. It is a shorthand for calling a single method that takes
           all of the parameters getting passed in. It is the same as all the above code.*/
+
         stoogeList.forEach(System.out::println);
     }
 
@@ -128,6 +140,7 @@ public class Lambda {
      *  But this is the GENERIC solution to the problem. Each class gets to define it's own
      *  more efficient implementation.
      */
+    @Test
     public void anotherSimpleCase() {
         List<String> stoogeList = Arrays.asList("Larry", "Curly", "Moe");
 
@@ -144,8 +157,8 @@ public class Lambda {
          * @see List#replaceAll(UnaryOperator)
          * Below is an implementation of the apply() method getting used by List when replaceAll()
          * is called.*/
-
-        stoogeList.replaceAll(new UnaryOperator<String>() {
+        List<String> stoogeListAnonymous = Arrays.asList("Larry", "Curly", "Moe");
+        stoogeListAnonymous.replaceAll(new UnaryOperator<String>() {
             @Override public String apply(String stooge) {
                 return stooge + " is a stooge";
             }
@@ -158,86 +171,19 @@ public class Lambda {
          It uses the array directly, never invoking an iterator, and takes care of
          ConcurrentModification
          */
+        List<String> stoogeListLambda = Arrays.asList("Larry", "Curly", "Moe");;
+        stoogeListLambda.replaceAll(stooge -> stooge + " is a stooge");
 
-        stoogeList.replaceAll(stooge -> stooge + " is a stooge");
+
+        stoogeList.replaceAll(this::addIsAStooge);
+        assertEquals(stoogeList, stoogeListAnonymous);
+        assertEquals(stoogeList, stoogeListLambda);
     }
 
 
-
-
-
-
-
-
-
-
-
-   public void aSwingExample() {
-        JButton importBtn = new JButton();
-        importBtn.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                Object[] options = { "Yes", "No" };
-                String messageDisplay =
-                        "This action will overwrite any information you have already entered for the current subject.\n" +
-                                "Do you still want to import?\n";
-                int resp =
-                        JOptionPane.showOptionDialog(null, messageDisplay, "Import", JOptionPane.YES_NO_OPTION,
-                                JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-
-                if (resp == JOptionPane.YES_OPTION) {
-                    BiometricAction transaction = getTransaction();
-                    if (transaction.getExternalId(ExternalIDType.FIN) != null) {
-                        // extract FINS from response
-                        String fins = transaction.getExternalId(ExternalIDType.FIN);
-                    }
-                }
-            }
-        });
+    private String addIsAStooge(String value) {
+        return value + " is a stooge";
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void aSwingExampleLambda() {
-        JButton importBtn = new JButton();
-        importBtn.addActionListener(event -> {
-            Object[] options = { "Yes", "No" };
-            String messageDisplay =
-                    "This action will overwrite any information you have already entered for the current subject.\n" +
-                            "Do you still want to import?\n";
-            int resp =
-                    JOptionPane.showOptionDialog(null, messageDisplay, "Import", JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-
-            if (resp == JOptionPane.YES_OPTION) {
-                BiometricAction transaction = getTransaction();
-                if (transaction.getExternalId(ExternalIDType.FIN) != null) {
-                    // extract FINS from response
-                    String fins = transaction.getExternalId(ExternalIDType.FIN);
-                }
-            }
-        });
-    }
-
-
-
-
-
-
 
 
 

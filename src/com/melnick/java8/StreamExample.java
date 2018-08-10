@@ -1,5 +1,9 @@
-package com.devtech.java8;
+package com.melnick.java8;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.stream.Stream;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -48,29 +52,34 @@ import java.util.stream.Collectors;
  */
 public class StreamExample {
 
+
     // Lets define some class called Transaction for use.
-    public static class Transaction {
+    static class Transaction {
 
         private TransactionStatus status;
         private TransactionType type;
         private Integer timeInSeconds;
+        private Record parentRecord;
 
-        public Transaction(TransactionStatus status, TransactionType type, Integer timeInSeconds) {
+        Transaction(TransactionStatus status, TransactionType type, Integer timeInSeconds) {
             this.status = status;
             this.type = type;
             this.timeInSeconds = timeInSeconds;
         }
 
-        public Integer getTimeInSeconds() {
+        Integer getTimeInSeconds() {
             return timeInSeconds;
         }
-        public Record getRecord() {
-            return null;
+        Record getRecord() {
+            return parentRecord;
         }
-        public TransactionType getType() {
+        void setRecord(Record parentRecord) {
+            this.parentRecord = parentRecord;
+        }
+        TransactionType getType() {
             return type;
         }
-        public TransactionStatus getStatus() {
+        TransactionStatus getStatus() {
             return status;
         }
     }
@@ -91,19 +100,21 @@ public class StreamExample {
 
 
 
-
-    public static void basicStream() {
+    @Test
+    public void basicStream() {
         Collection<Transaction> collection = createCollection();
-        int count = 0;
+        long count = 0;
         for (Transaction streamExample : collection) {
-            if (streamExample.type == TransactionType.ABIS) {
+            if (streamExample.type == TransactionType.IAFIS) {
                 count++;
             }
         }
 
-        long count2 = collection.stream()
-                .filter(transaction -> transaction.type == TransactionType.ABIS)
+        long streamCount = collection.stream()
+                .filter(transaction -> transaction.type == TransactionType.IAFIS)
                 .count();
+
+        Assert.assertEquals(count, streamCount);
     }
 
 
@@ -127,18 +138,18 @@ public class StreamExample {
      *  number of intermediate operations together, as they produce new streams.
      *  Terminal operations produce a result.
     */
-    public static void streamOperations() {
+    public void streamOperations() {
         Collection<Transaction> collection = createCollection();
 
         /*the desired behavior: from all the items in the collection, get the parent record,
         then get a list of all the "DONE" transactions for all the records.*/
         //traditional
         Set<Transaction> noDuplicates = new HashSet<>(collection);
-        List<Transaction> doneList2 = new ArrayList<>();
+        List<Transaction> traditionalDoneList = new ArrayList<>();
         for (Transaction transaction : noDuplicates) {
             for (Transaction transaction1 : transaction.getRecord().getTransactions()) {
                 if (transaction.getStatus() == TransactionStatus.DONE) {
-                        doneList2.add(transaction1);
+                        traditionalDoneList.add(transaction1);
                 }
             }
         }
@@ -151,19 +162,22 @@ public class StreamExample {
           in it's own method. It is clear that this is a pipeline of work intended to
           do a single unit of work.
         */
-        List<Transaction> doneList = collection.stream()
-                .distinct()
+        List<Transaction> streamedDoneList = collection.stream()
                 .map(transaction -> transaction.getRecord().getTransactions())
-                .flatMap(transactions -> transactions.stream())
+                .flatMap(Collection::stream)
                 .filter(transaction -> transaction.getStatus() == TransactionStatus.DONE)
+                .distinct()
                 .collect(Collectors.toList());
 
+        Assert.assertEquals(traditionalDoneList, streamedDoneList);
 
-        List<Transaction> doneLists = collection.stream()
-                .distinct()
+        streamedDoneList = collection.stream()
                 .flatMap(transactions -> transactions.getRecord().getTransactions().stream())
                 .filter(transaction -> transaction.getStatus() == TransactionStatus.DONE)
+                .distinct()
                 .collect(Collectors.toList());
+
+        Assert.assertEquals(traditionalDoneList, streamedDoneList);
     }
 
 
@@ -182,7 +196,7 @@ public class StreamExample {
 
 
     @Test
-    public static void aggregateWaitTime() {
+    public void aggregateWaitTime() {
         Collection<Transaction> collection = createCollection();
         //traditional
         int waitTime = 0;
@@ -246,70 +260,10 @@ public class StreamExample {
 
 
 
-
-
-
-
-
-
-    public static void aRealExample(Collection<Image> images, CaptureMode mode) {
-        if (mode == CaptureMode.TWO_PRINT) {
-            Set<Image> twoPrintSet = new HashSet<>();
-            for (Image image : images) {
-                if (image.getStatus() == CaptureStatus.C && image.getType().isFinger()) {
-                    twoPrintSet.add(image);
-                    if (twoPrintSet.size() == 2) {
-                        break;
-                    }
-                }
-            }
-            images = twoPrintSet;
-        }
-
-       // return super.createBiometricDetails(images, mode);
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static void aRealExampleStream(Collection<Image> images, CaptureMode mode) {
-            images = images.stream()
-                    .filter(image -> image.getStatus() == CaptureStatus.C && image.getType()
-                            .isFinger())
-                    .limit(mode.getPrints())
-                    .collect(Collectors.toSet());
-        // return super.createBiometricDetails(images, mode);
-
-    }
-
-
-
-
-
-
-
-
-
-
-
     public static void modifyingOperations() {
         List<Integer> intList = new Random().ints(100).boxed().collect(Collectors.toList());
 
-        intList.stream().sorted(); //This does not sort the list!
+        intList.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList()); //This does not sort the list!
 
         intList.sort(null); //This sorts the list!
 
@@ -398,6 +352,7 @@ public class StreamExample {
     /*flatMap() is an important operation for dealing with nested objects.
     * Essentially what it does is take in a stream of streamable objects, and flattens it into a
     * single stream. Lets take a look*/
+    @Test
     public void flatMapOperation() {
         List<Image> subjectA = Arrays.asList(ImageType.FINGERPRINT, ImageType.MUGSHOT);
         List<Image> subjectB = Arrays.asList(ImageType.MUGSHOT, ImageType.FINGERPRINT);
@@ -422,16 +377,57 @@ public class StreamExample {
 
         /*flatMap. We map the incoming List<Image> to a stream. FlatMap will then combine the
         results of the multiple streams into a single stream on which to work.*/
-        captureStatusList = subjectImagesList.stream()
+        List<CaptureStatus> captureStatusListFlatMap = subjectImagesList.stream()
                 .flatMap(subjectList -> subjectList.stream()) //for each List<Image>, get it's stream. the function then combines them
                 .map(image -> image.getStatus())
                 .collect(Collectors.toList());
 
+        Assert.assertEquals(captureStatusList, captureStatusListFlatMap);
+
         //same using method references
-        captureStatusList = subjectImagesList.stream()
+        captureStatusListFlatMap = subjectImagesList.stream()
                 .flatMap(Collection::stream)
                 .map(Image::getStatus)
                 .collect(Collectors.toList());
+
+        Assert.assertEquals(captureStatusList, captureStatusListFlatMap);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    private List<String> getReceiptNumbersIterative(Collection<BenefitRequest> benefitRequests) {
+        List<String> receiptNumbers = new ArrayList<>();
+        for (BenefitRequest benefitRequest : benefitRequests) {
+            receiptNumbers.add(benefitRequest.getUscisReceiptNumber());
+        }
+        return receiptNumbers;
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // Returns List instead of Array for reuse in completeCasePaymentTasks in next example
+    private List<String> getReceiptNumbers(Collection<BenefitRequest> benefitRequests) {
+        return benefitRequests
+            .stream()
+            .map(BenefitRequest::getUscisReceiptNumber)
+            .collect(Collectors.toList());
     }
 
 
@@ -447,16 +443,54 @@ public class StreamExample {
 
 
 
+    private void completeCasePaymentTasksIterative(Collection<BenefitRequest> benefitRequests) {
+        List<String> receiptNumbers = getReceiptNumbers(benefitRequests);
+        List<Case> caseList = caseDAO.findCasesByReceiptList(receiptNumbers);
+        for (Case cisCase : caseList) {
+            if (shouldUpdateCasePaymentTask(cisCase)) {
+                workflowEventService.updateTaskAfterEvent(
+                    new TaskEventKeyHolder(TaskType.CASE_PAYMENT_VALIDATION, TaskStatus.COMPLETED),
+                    cisCase.getCaseIdentifier(), null);
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+    private void completeCasePaymentTasks(Collection<BenefitRequest> benefitRequests) {
+        List<String> receiptNumbers = getReceiptNumbers(benefitRequests);
+        TaskEventKeyHolder taskEvent = new TaskEventKeyHolder(TaskType.CASE_PAYMENT_VALIDATION, TaskStatus.COMPLETED);
+        caseDAO
+            .findCasesByReceiptList(receiptNumbers)
+            .stream()
+            .filter(this::shouldUpdateCasePaymentTask)
+            .map(Case::getCaseIdentifier)
+            .forEach(cisCaseId ->
+                workflowEventService.updateTaskAfterEvent(
+                    taskEvent, cisCaseId, null));
+    }
+
+
+
+
 
 
     public static Collection<Transaction>  createCollection() {
         List<Transaction> collection = new ArrayList<>();
-        collection.add(new StreamExample.Transaction(TransactionStatus.DONE, TransactionType.IAFIS, 30));
+        collection.add(new Transaction(TransactionStatus.DONE, TransactionType.IAFIS, 30));
         collection.add(new Transaction(TransactionStatus.DONE, TransactionType.ABIS, 60));
         collection.add(new Transaction(TransactionStatus.IN_PROGRESS, TransactionType.IAFIS, 30));
         collection.add(new Transaction(TransactionStatus.IN_PROGRESS, TransactionType.IDENT, 50));
         collection.add(new Transaction(TransactionStatus.SENDING, TransactionType.IDENT, 20));
         collection.add(new Transaction(TransactionStatus.SENDING, TransactionType.ABIS, 60));
+
         return collection;
     }
 
@@ -502,4 +536,34 @@ public class StreamExample {
     }
     enum TransactionStatus {SENDING, IN_PROGRESS, DONE}
     enum TransactionType {IDENT, IAFIS, ABIS;}
+
+
+
+    interface BenefitRequest { String getUscisReceiptNumber();}
+    interface Case{String getCaseIdentifier();}
+
+    class TaskEventKeyHolder{
+
+        public TaskEventKeyHolder(TaskType type, TaskStatus status) {
+
+        }
+    }
+
+    class SomeDAO{
+
+        List<Case> findCasesByReceiptList(Object whatever) {
+            return null;
+        }
+    }
+
+    class SomeWorkflow{
+        void updateTaskAfterEvent(TaskEventKeyHolder event, String foo, Object bar) {}
+    }
+    private SomeDAO caseDAO = new SomeDAO();
+    private SomeWorkflow workflowEventService = new SomeWorkflow();
+    enum TaskType{CASE_PAYMENT_VALIDATION}
+    enum TaskStatus{COMPLETED}
+    boolean shouldUpdateCasePaymentTask(Case theCase) {
+        return true;
+    }
 }

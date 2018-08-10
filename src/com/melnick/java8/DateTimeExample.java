@@ -1,4 +1,4 @@
-package com.devtech.java8;
+package com.melnick.java8;
 
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -61,6 +61,10 @@ public class DateTimeExample {
         ZoneId zoneUTC = ZoneId.of("UTC");
         ZoneId zoneLA = ZoneId.of("America/Los_Angeles");
         ZoneId southPole = ZoneId.of("Antarctica/South_Pole");
+
+        //be careful! These are not the same. EST is fixed to -5, and does not follow DST.
+        ZoneId zoneEST = ZoneId.of("EST");
+        ZoneId zoneEastCoast = ZoneId.of("America/New_York");
 
         //LOCAL DATE - Only date information. No time or timezone information is included.
         LocalDate localDate = LocalDate.now();
@@ -154,8 +158,7 @@ public class DateTimeExample {
     public static void findSpecificTimes() {
         //STATIC DAYS
         MonthDay zachBirthday = MonthDay.of(Month.MARCH, 15);
-        MonthDay julyFourth = MonthDay.of(Month.JULY, 4);
-        LocalDate zachBDay2016 = zachBirthday.atYear(2016);
+        LocalDate zachBDay2019 = zachBirthday.atYear(2019);
 
         //DYNAMIC DAYS - Find the date for the next Thanksgiving
         TemporalAdjuster fourthThursdayAdjuster =
@@ -168,48 +171,41 @@ public class DateTimeExample {
         }
 
         //DYNAMIC DAYS WITH LAMBDA BASED INTERFACES
-        LocalDate thanksgivingEasy = LocalDate.now().with(nextThanksgiving());
+        LocalDate thanksgivingEasy = LocalDate.now().with(DateTimeExample::nextThanksgiving);
 
     }
 
 
+    /**
+     *
+     * Why does this work as a method refrence?
+     * The nextThanksgiving(Temporal date) has the same SIGNATURE as TemportalAdjuster's adjustInto
+     * method
+     * TemporalAdjuster's apply method is Temporal adjustInto(Temporal temporal). So the language is
+     * simply replacing adjustInto() with nextThanksgiving(), since they are equivalent.
+     */
 
+    public static Temporal nextThanksgiving(Temporal date) {
 
+        if (date.isSupported(YEAR) && date.isSupported(MONTH_OF_YEAR) && date
+            .isSupported(DAY_OF_MONTH)) {
 
+            TemporalAdjuster fourthThursdayAdjuster = TemporalAdjusters.dayOfWeekInMonth(4, THURSDAY);
+            Temporal thanksgiving = date.with(NOVEMBER).with(fourthThursdayAdjuster);
 
+            if (LocalDate.from(date).isAfter(LocalDate.from(thanksgiving)) || date.equals(thanksgiving)) {
+                thanksgiving = thanksgiving.plus(Period.ofYears(1)).with(fourthThursdayAdjuster);
+            }
 
+            return thanksgiving;
+        }
 
-
-
-
-
-
-
-
+        throw new UnsupportedTemporalTypeException("Temporal must support Year, Month, and Day");
+    }
 
 
 
     public static TemporalAdjuster nextThanksgiving() {
-        return (temporal -> {
-
-            if (temporal.isSupported(YEAR) && temporal.isSupported(MONTH_OF_YEAR) && temporal
-                    .isSupported(DAY_OF_MONTH)) {
-
-                TemporalAdjuster fourthThursdayAdjuster = TemporalAdjusters.dayOfWeekInMonth(4, THURSDAY);
-                Temporal thanksgiving = temporal.with(NOVEMBER).with(fourthThursdayAdjuster);
-
-                if (LocalDate.from(temporal).isAfter(LocalDate.from(thanksgiving)) || temporal.equals(thanksgiving)) {
-                    thanksgiving = thanksgiving.plus(Period.ofYears(1)).with(fourthThursdayAdjuster);
-                }
-
-                return thanksgiving;
-            }
-            throw new UnsupportedTemporalTypeException(
-                    "Temporal must support Year, Month, and Day");
-        });
-    }
-
-    public static TemporalAdjuster nextThanksgiving0() {
         return new TemporalAdjuster() {
 
             @Override

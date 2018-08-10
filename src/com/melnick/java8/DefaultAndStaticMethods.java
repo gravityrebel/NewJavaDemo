@@ -1,4 +1,4 @@
-package com.devtech.java8;
+package com.melnick.java8;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -170,6 +170,7 @@ public class DefaultAndStaticMethods {
         }
 
         //Syntax to override a default method, but also use a default method.
+        //We dont' want to show every meeting. Remove every other meeting. They are SECRET
         @Override public List<LocalDate> getOrderedListOfMeetingDates() {
             List<LocalDate> orderedListOfMeetingDates =
                     SecretSociety.super.getOrderedListOfMeetingDates();
@@ -179,6 +180,7 @@ public class DefaultAndStaticMethods {
             }
             return orderedListOfMeetingDates;
         }
+
 
     }
 
